@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "validator_predicates": [
+    "backslot-flike:backslot",
+    "trinkets:tag"
+  ]
+}

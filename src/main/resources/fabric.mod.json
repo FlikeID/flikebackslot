@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "backslot-flike",
+  "version": "${version}",
+  "name": "BackSlot by Flike",
+  "description": "BackSlot mod using Trinkets",
+  "authors": [],
+  "contact": {},
+  "license": "LGPL-3.0",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "my.flike.client.backslotDataGenerator"
+    ],
+    "client": [
+      "my.flike.client.BackslotClient"
+    ],
+    "main": [
+      "my.flike.Backslot"
+    ]
+  },
+  "mixins": [
+    "backslot-flike.mixins.json",
+    {
+      "config": "backslot-flike.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "trinkets": "*"
+  }
+}

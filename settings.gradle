@@ -1,0 +1,17 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        maven {
+            name = "TerraformersMC"
+            url = "https://maven.terraformersmc.com/"
+        }
+        maven {
+            name "ladysnakeReleases"
+            url "https://maven.ladysnake.org/releases"
+        }
+        gradlePluginPortal()
+    }
+}
