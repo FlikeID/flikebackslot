@@ -1,6 +1,6 @@
 package my.flike.client.mixin;
 
-import my.flike.client.render.BackItemFeatureRenderer;
+import my.flike.client.render.BackSlotFeatureRenderer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -23,6 +23,6 @@ public abstract class PlayerEntityFeatureMixin extends LivingEntityRenderer<Abst
 
     @Inject(method = "<init>", at=  @At("RETURN"))
     private void addBackpackFeatureRenderer(EntityRendererFactory.Context ctx, boolean slim, CallbackInfo ci) {
-        addFeature(new BackItemFeatureRenderer(this));
+        addFeature(new BackSlotFeatureRenderer(this));
     }
 }

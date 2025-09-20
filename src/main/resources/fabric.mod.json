@@ -13,7 +13,7 @@
       "my.flike.client.backslotDataGenerator"
     ],
     "client": [
-      "my.flike.client.BackslotClient"
+      "my.flike.client.BackSlotClient"
     ],
     "main": [
       "my.flike.Backslot"

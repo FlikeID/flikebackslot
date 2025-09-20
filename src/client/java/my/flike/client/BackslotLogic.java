@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class BackslotLogic {
+
     public static final Identifier SWAP_PACKET = new Identifier(Backslot.MOD_ID, "flike_backslot_swap");
 
     public static void register() {
@@ -28,11 +29,12 @@ public class BackslotLogic {
     }
 
     public static void swapItems(MinecraftClient client) {
-        if (client.player != null) {
-            // пустой пакет — сервер определяет selectedSlot сам
+        if (client == null || client.player == null) return;
+        client.execute(() -> {
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
             ClientPlayNetworking.send(SWAP_PACKET, buf);
-        }
+            Backslot.LOG("Sent swap packet to server");
+        });
     }
 
     public static ItemStack getBackItemStack(AbstractClientPlayerEntity player) {
