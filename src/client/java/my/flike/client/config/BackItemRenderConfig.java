@@ -53,14 +53,6 @@ public class BackItemRenderConfig {
         }
 
         /**
-         * Проверяет, существует ли такой тип.
-         */
-        public static boolean isValid(String value) {
-            return Arrays.stream(values())
-                    .anyMatch(k -> k.name().equalsIgnoreCase(value));
-        }
-
-        /**
          * Преобразует строку в TypeKey, выбрасывая ошибку, если тип неизвестен.
          */
         public static TypeKey fromString(String value) throws CommandSyntaxException {
@@ -99,14 +91,6 @@ public class BackItemRenderConfig {
 
         public static String getDescription(String key) {
             try { return valueOf(key).getDescription(); } catch (IllegalArgumentException e) { return null; }
-        }
-
-        /**
-         * Проверяет, существует ли такой ключ.
-         */
-        public static boolean isValid(String value) {
-            return Arrays.stream(values())
-                    .anyMatch(k -> k.name().equalsIgnoreCase(value));
         }
 
         /**
@@ -179,14 +163,6 @@ public class BackItemRenderConfig {
         }
 
         /**
-         * Проверяет, существует ли такой ключ.
-         */
-        public static boolean isValid(String value) {
-            return Arrays.stream(values())
-                    .anyMatch(k -> k.name().equalsIgnoreCase(value));
-        }
-
-        /**
          * Преобразует строку в AxisKey, выбрасывая ошибку, если ключ неизвестен.
          */
         public static ModeKey fromString(String value) throws CommandSyntaxException {
@@ -246,13 +222,6 @@ public class BackItemRenderConfig {
         setBackItemTransform(stack.getItem(), backItemTransform);
     }
 
-    private static void setBackItemTransform(ItemStack stack, Transformation transform){
-        setBackItemTransform(stack, new BackItemTransform(transform));
-    }
-    private static void setBackItemTransform(ItemStack stack, ModelTransformationMode transform_mode){
-        setBackItemTransform(stack, new BackItemTransform(transform_mode));
-    }
-
     public static void updateBackItemTransformTranslation(TypeKey typeKey, AxisKey axisKey, float value) {
         AbstractClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return ;
@@ -298,12 +267,10 @@ public class BackItemRenderConfig {
 
         BackItemTransform  transform = getBackItemTransform(backStack);
 
-        switch (typeKey.canonical()){
-            case scale -> {
-                transform.transform.scale.x = value;
-                transform.transform.scale.y = value;
-                transform.transform.scale.z = value;
-            }
+        if (typeKey.canonical() == TypeKey.scales) {
+            transform.transform.scale.x = value;
+            transform.transform.scale.y = value;
+            transform.transform.scale.z = value;
         }
         setBackItemTransform(backStack, transform);
 

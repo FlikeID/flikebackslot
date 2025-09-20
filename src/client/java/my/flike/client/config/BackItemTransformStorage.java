@@ -87,9 +87,11 @@ public final class BackItemTransformStorage {
                 // fallback: обычный move/replace
                 Files.move(CONFIG_DIR.resolve("backslot.json.tmp"), CONFIG_FILE, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
+                //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
         } catch (IOException ex) {
+            //noinspection CallToPrintStackTrace
             ex.printStackTrace();
         }
     }
@@ -110,6 +112,7 @@ public final class BackItemTransformStorage {
                 result.put(id, d);
             }
         } catch (IOException | JsonSyntaxException ex) {
+            //noinspection CallToPrintStackTrace
             ex.printStackTrace();
         }
         return result;

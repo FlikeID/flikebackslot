@@ -172,6 +172,7 @@ public final class BackSlotClientCommands {
                         BackItemRenderConfig.loadBackItemTransformsFromDisk();
                         ctx.getSource().sendFeedback(Text.of("Backslot config reloaded."));
                     } catch (Exception ex) {
+                        //noinspection CallToPrintStackTrace
                         ex.printStackTrace();
                         ctx.getSource().sendError(Text.of("Failed to reload backslot config: " + ex.getMessage()));
                     }
@@ -187,6 +188,7 @@ public final class BackSlotClientCommands {
                         ctx.getSource().sendFeedback(Text.of("Backslot config saved.")); // отправить фидбек игроку
                     } catch (Exception ex) {
                         // логирование и информирование пользователя
+                        //noinspection CallToPrintStackTrace
                         ex.printStackTrace();
                         ctx.getSource().sendError(Text.of("Failed to save backslot config: " + ex.getMessage()));
                     }
@@ -214,7 +216,7 @@ public final class BackSlotClientCommands {
                             float value = FloatArgumentType.getFloat(ctx, "value");
                             // применяем ко всем типам/текущему типу — выбери семантику, здесь пример для текущего айтема игрока
                             BackItemRenderConfig.updateBackItemTransformTranslation(
-                                    BackItemRenderConfig.TypeKey.scale,
+                                    BackItemRenderConfig.TypeKey.scales,
                                     value
                             );
                             return 1;
