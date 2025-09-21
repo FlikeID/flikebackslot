@@ -18,9 +18,9 @@ public class BackSlotFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
     private final MinecraftClient client;
     private final ItemRenderer itemRenderer;
 
-    public BackSlotFeatureRenderer(FeatureRendererContext<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> context) {
+    public BackSlotFeatureRenderer(FeatureRendererContext<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> context, MinecraftClient client) {
         super(context);
-        this.client = MinecraftClient.getInstance();
+        this.client = client;
         this.itemRenderer = client.getItemRenderer();
     }
 
@@ -30,9 +30,6 @@ public class BackSlotFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
         // Проверяем, невидим ли игрок для клиента (например, spectator/невидимость).
         if (player.isInvisibleTo(client.player)) return;
 
-        // Получаем модель игрока из контекста
-        PlayerEntityModel<AbstractClientPlayerEntity> model = this.getContextModel();
-
         //Получаем предмет
         ItemStack backStack = BackslotLogic.getBackItemStack(player);
         if (backStack.isEmpty()) return;
@@ -41,14 +38,11 @@ public class BackSlotFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
 
         // обязательно сохранить/восстановить стек матриц
         matrices.push();
-        // применяем положение тела к положению предмета
-        model.body.rotate(matrices);
-
         try {
         // Применяем трансформацию
             backItemTransform.applyTransform(matrices);
             // Рендер ItemStack через ItemRenderer
-            itemRenderer.renderItem(
+            MinecraftClient.getInstance().getItemRenderer().renderItem(
                     backStack,
                     backItemTransform.transform_mode,
                     light,

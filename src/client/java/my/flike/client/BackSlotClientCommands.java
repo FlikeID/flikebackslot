@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import my.flike.Backslot;
 import my.flike.client.config.BackItemRenderConfig;
 import my.flike.client.config.BackItemTransformStorage;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -30,9 +31,9 @@ public final class BackSlotClientCommands {
 
     public static void sendModInfo(FabricClientCommandSource src) {
         src.sendFeedback(Text.of("BackSlot"));
-        src.sendFeedback(Text.of("  Версия: 1.0.0")); // замени на актуальную версию
+        src.sendFeedback(Text.of("  Версия: "+ Backslot.getModVersion())); // замени на актуальную версию
         src.sendFeedback(Text.of("  Автор: FlikeID")); // замени на реального автора
-        src.sendFeedback(Text.of("  Описание: Слоты спины для оружия с поддержкой кастомных трансформаций"));
+        src.sendFeedback(Text.of("  Описание: Слоты спины для оружия с поддержкой кастомных трансформаций. Использует Trinket"));
         src.sendFeedback(Text.of("  Репозиторий: https://github.com/your/repo")); // опционально
         src.sendFeedback(Text.of("Используй /backslot help для списка команд"));
     }
