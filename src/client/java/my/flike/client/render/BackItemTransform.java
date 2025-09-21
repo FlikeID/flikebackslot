@@ -15,10 +15,9 @@ public class BackItemTransform {
         return new Transformation(
                 new Vector3f(0f, 0f, 270f),
                 new Vector3f(0f, 0.25f, 0.17f),
-                new Vector3f(1f, 1f, 1f)
+                new Vector3f(1f, 1f, 21f)
         );
     }
-
 
     private static final ModelTransformationMode default_transform_mode = ModelTransformationMode.FIXED;
 
@@ -32,10 +31,6 @@ public class BackItemTransform {
 
     public BackItemTransform(Transformation transform) {
         this(transform, default_transform_mode);
-    }
-
-    public BackItemTransform(ModelTransformationMode transform_mode) {
-        this(makeDefaultTransform(), transform_mode);
     }
 
     public BackItemTransform(Transformation transform, ModelTransformationMode transform_mode) {
@@ -52,14 +47,14 @@ public class BackItemTransform {
             return new BowBackItemTransform();
         } else if (item instanceof CrossbowItem) {
             return new CrossbowBackItemTransform();
+        } else if (item instanceof SwordItem) {
+            return new SwordBackItemTransform();
         } else if (item instanceof ShieldItem) {
             return new ShieldBackItemTransform();
         } else if (item instanceof TridentItem) {
             return new TridentBackItemTransform();
-        } else if (item instanceof ToolItem) {
-            return new ToolBackItemTransform();
-        } else if (item instanceof SwordItem) {
-            return new SwordBackItemTransform();
+        } else if (item instanceof ToolItem) {  // ToolItem должен быть в конце
+            return new ToolBackItemTransform(); // т.к. от него наследуется SwordItem
         } else {
             return new BackItemTransform(); // fallback
         }

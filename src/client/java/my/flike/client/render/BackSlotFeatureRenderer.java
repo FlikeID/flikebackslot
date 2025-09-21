@@ -1,6 +1,7 @@
 package my.flike.client.render;
 
-import my.flike.client.BackslotLogic;
+import my.flike.BackSlotLogic;
+import my.flike.client.BackSlotClientLogic;
 import my.flike.client.config.BackItemRenderConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -34,7 +35,7 @@ public class BackSlotFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
         PlayerEntityModel<AbstractClientPlayerEntity> model = this.getContextModel();
 
         //Получаем предмет
-        ItemStack backStack = BackslotLogic.getBackItemStack(player);
+        ItemStack backStack = BackSlotLogic.getBackItemStack(player);
         if (backStack.isEmpty()) return;
         BackItemTransform backItemTransform = BackItemRenderConfig.getBackItemTransform(backStack);
         if (!backItemTransform.enabled) return;

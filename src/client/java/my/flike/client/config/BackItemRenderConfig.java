@@ -4,10 +4,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import my.flike.client.BackslotLogic;
+import my.flike.BackSlotLogic;
+import my.flike.client.BackSlotClientLogic;
 import my.flike.client.render.BackItemTransform;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.render.model.json.Transformation;
 import net.minecraft.item.Item;
@@ -29,8 +31,8 @@ public class BackItemRenderConfig {
         position("позиция"), pos("позиция"), p("позиция"),
         scale("масштаб"), scl("масштаб"), s("масштаб"),
         render("метод рендера"), ren("метод рендера"), m("метод рендера"),
-        scales("равномерный масштаб (см. ниже)");
-
+        scales("равномерный масштаб (см. ниже)"), json("загрузка параметров из json-строки"),
+        translation("синоним position");
         private final String description;
         TypeKey(String description) { this.description = description; }
         public String getDescription() { return description; }
@@ -45,7 +47,7 @@ public class BackItemRenderConfig {
         public TypeKey canonical() {
             return switch (this) {
                 case rot, r -> rotation;
-                case pos, p -> position;
+                case translation, pos, p -> position;
                 case scl, s -> scale;
                 case ren, m -> render;
                 default -> this;
@@ -202,31 +204,33 @@ public class BackItemRenderConfig {
         BackItemTransform existing = backItemTransforms.get(itemId);
         if (existing != null) return existing;
 
-        // Создаем через фабрику, но защищаемся от гонки putIfAbsent
-        BackItemTransform created = BackItemTransform.of(stack);
-        BackItemTransform raced = backItemTransforms.putIfAbsent(itemId, created);
-        return raced != null ? raced : created;
+        // Возвращаем трансформацию по умолчанию для данного типа предмета
+        return BackItemTransform.of(stack);
     }
 
 
 
-    private static void setBackItemTransform(Identifier id, BackItemTransform backItemTransform ){
+    public static void setBackItemTransform(Identifier id, BackItemTransform backItemTransform ){
         backItemTransforms.put(id, backItemTransform);
     }
 
-    private static void setBackItemTransform(Item item, BackItemTransform backItemTransform ){
+    public static void setBackItemTransform(Item item, BackItemTransform backItemTransform ){
         setBackItemTransform(Registries.ITEM.getId(item), backItemTransform);
     }
 
-    private static void setBackItemTransform(ItemStack stack, BackItemTransform backItemTransform ){
+    public static void setBackItemTransform(ItemStack stack, BackItemTransform backItemTransform ){
         setBackItemTransform(stack.getItem(), backItemTransform);
+    }
+
+    public static void setBackItemTransform(ClientPlayerEntity player, BackItemTransform backItemTransform ){
+        setBackItemTransform(BackSlotLogic.getBackItemStack(player), backItemTransform);
     }
 
     public static void updateBackItemTransformTranslation(TypeKey typeKey, AxisKey axisKey, float value) {
         AbstractClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return ;
 
-        ItemStack backStack = BackslotLogic.getBackItemStack(player);
+        ItemStack backStack = BackSlotLogic.getBackItemStack(player);
         if (backStack == null || backStack.isEmpty()) return;
 
         BackItemTransform  transform = getBackItemTransform(backStack);
@@ -262,7 +266,7 @@ public class BackItemRenderConfig {
         AbstractClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return ;
 
-        ItemStack backStack = BackslotLogic.getBackItemStack(player);
+        ItemStack backStack = BackSlotLogic.getBackItemStack(player);
         if (backStack == null || backStack.isEmpty()) return;
 
         BackItemTransform  transform = getBackItemTransform(backStack);
@@ -280,7 +284,7 @@ public class BackItemRenderConfig {
         AbstractClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return;
 
-        ItemStack backStack = BackslotLogic.getBackItemStack(player);
+        ItemStack backStack = BackSlotLogic.getBackItemStack(player);
         if (backStack == null || backStack.isEmpty()) return;
 
         BackItemTransform transform = getBackItemTransform(backStack);
@@ -290,71 +294,6 @@ public class BackItemRenderConfig {
 
         setBackItemTransform(backStack, transform);
 
-    }
-
-    public static int showBackItemTransform() {
-        AbstractClientPlayerEntity player = MinecraftClient.getInstance().player;
-        if (player == null) return 0;
-
-        ItemStack backStack = BackslotLogic.getBackItemStack(player);
-        if (backStack == null || backStack.isEmpty()) {
-            player.sendMessage(Text.literal("Backslot: no item in back").formatted(Formatting.YELLOW), false);
-            return 0;
-        }
-
-        BackItemTransform transform = getBackItemTransform(backStack);
-
-        Transformation t = transform.transform;
-        ModelTransformationMode mode = transform.transform_mode;
-        boolean enabled = transform.enabled;
-
-        String rot   = String.format("rotation:     x=%.1f y=%.1f z=%.1f", t.rotation.x, t.rotation.y, t.rotation.z);
-        String transl = String.format("translation: x=%.3f y=%.3f z=%.3f", t.translation.x, t.translation.y, t.translation.z);
-        String scale = String.format("scale:        x=%.3f y=%.3f z=%.3f", t.scale.x, t.scale.y, t.scale.z);
-        String modeStr = "mode: " + (mode != null ? mode.name() : "null");
-        String enabledeStr = "enabled: " + enabled;
-
-        player.sendMessage(Text.literal("Backslot transform for " + backStack.getItem()).formatted(Formatting.AQUA), false);
-        player.sendMessage(Text.literal(rot).formatted(Formatting.WHITE), false);
-        player.sendMessage(Text.literal(transl).formatted(Formatting.WHITE), false);
-        player.sendMessage(Text.literal(scale).formatted(Formatting.WHITE), false);
-        player.sendMessage(Text.literal(modeStr).formatted(Formatting.LIGHT_PURPLE), false);
-        player.sendMessage(Text.literal(enabledeStr).formatted(Formatting.DARK_PURPLE), false);
-
-        JsonObject root = new JsonObject();
-        root.add("item", new JsonPrimitive(backStack.toString()));
-
-        JsonObject rotation = new JsonObject();
-        rotation.add("x", new JsonPrimitive(t.rotation.x));
-        rotation.add("y", new JsonPrimitive(t.rotation.y));
-        rotation.add("z", new JsonPrimitive(t.rotation.z));
-        root.add("rotation", rotation);
-
-        JsonObject translation = new JsonObject();
-        translation.add("x", new JsonPrimitive(t.translation.x));
-        translation.add("y", new JsonPrimitive(t.translation.y));
-        translation.add("z", new JsonPrimitive(t.translation.z));
-        root.add("translation", translation);
-
-        JsonObject jscale = new JsonObject();
-        jscale.add("x", new JsonPrimitive(t.scale.x));
-        jscale.add("y", new JsonPrimitive(t.scale.y));
-        jscale.add("z", new JsonPrimitive(t.scale.z));
-        root.add("scale", jscale);
-
-        root.add("mode", new JsonPrimitive(mode != null ? mode.name().toLowerCase() : "null"));
-        root.add("enabled", new JsonPrimitive(enabled));
-
-        String json = root.toString();
-
-        Text button = Text.literal(" [Копировать]").styled(s ->s
-                .withColor(Formatting.GOLD)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, json))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать JSON в буфер обмена").formatted(Formatting.GOLD)))
-        );
-        player.sendMessage(button, false);
-
-        return 1;
     }
 
     /**
