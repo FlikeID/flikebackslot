@@ -14,7 +14,6 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
@@ -45,7 +44,7 @@ public final class BackSlotClientCommandsBuilder {
                             try {
                                 ClientPlayerEntity player = ctx.getSource().getPlayer();
                                 if (BackSlotLogic.getBackItemStack(player).isEmpty()){
-                                    src.sendFeedback(Text.of(Formatting.YELLOW + "Backslot: no item in back"));
+                                    src.sendFeedback(Text.translatable("chat.backslot-flike.backslot_empty").setStyle(BackSlotCommandsStyles.warning));
                                     return 0;
                                 }
                                 // Получаем BackItemTransform
@@ -53,17 +52,18 @@ public final class BackSlotClientCommandsBuilder {
                                 // Применяем BackItemTransform к ClientPlayer (берётся из контекста FabricClientCommandSource)
                                 BackItemRenderConfig.setBackItemTransform(player, backItemTransform);
 
-                                src.sendFeedback(Text.of(Formatting.GREEN + "Backslot transform applied from JSON."));
+                                src.sendFeedback(Text.translatable("chat.backslot-flike.transform_applied").setStyle(BackSlotCommandsStyles.applied));
                                 return 1;
                             } catch (com.google.gson.JsonParseException jex) {
-                                src.sendError(Text.of(Formatting.RED + "Invalid JSON: " + jex.getMessage()));
+                                src.sendError(Text.translatable("chat.backslot-flike.invalid_json", jex.getMessage()).setStyle(BackSlotCommandsStyles.warning));
                                 return 0;
                             } catch (IllegalArgumentException iex) {
-                                src.sendError(Text.of(Formatting.RED + "Invalid transform: " + iex.getMessage()));
+                                src.sendError(Text.translatable("chat.backslot-flike.invalid_transform",  iex.getMessage()).setStyle(BackSlotCommandsStyles.warning));
                                 return 0;
                             } catch (Exception ex) {
+                                //noinspection CallToPrintStackTrace
                                 ex.printStackTrace();
-                                src.sendError(Text.of(Formatting.RED + "Failed to apply transform: " + ex.getMessage()));
+                                src.sendError(Text.translatable("chat.backslot-flike.failed_transform", ex.getMessage()).setStyle(BackSlotCommandsStyles.warning));
                                 return 0;
                             }
                         })
@@ -87,7 +87,7 @@ public final class BackSlotClientCommandsBuilder {
 
     private static LiteralArgumentBuilder<FabricClientCommandSource> buildTransformCommand() {
         return literal("transform")
-                .executes(ctx -> BackSlotCommandsHandler.showBackItemTransform())
+                .executes(ctx -> BackSlotCommandsHandler.showBackItemTransform(ctx.getSource()))
                 .then(buildJsonCommand())
                 .then(buildRenderCommand())
                 .then(buildScalesCommand())
@@ -99,11 +99,11 @@ public final class BackSlotClientCommandsBuilder {
                 .executes(ctx -> {
                     try {
                         BackItemRenderConfig.loadBackItemTransformsFromDisk();
-                        ctx.getSource().sendFeedback(Text.of("Backslot config reloaded."));
+                        ctx.getSource().sendFeedback(Text.translatable("chat.backslot-flike.config_reloaded").setStyle(BackSlotCommandsStyles.applied));
                     } catch (Exception ex) {
                         //noinspection CallToPrintStackTrace
                         ex.printStackTrace();
-                        ctx.getSource().sendError(Text.of("Failed to reload backslot config: " + ex.getMessage()));
+                        ctx.getSource().sendError(Text.translatable("chat.backslot-flike.reloading_error", ex.getMessage()).setStyle(BackSlotCommandsStyles.warning));
                     }
                     return 1;
                 });
@@ -114,12 +114,12 @@ public final class BackSlotClientCommandsBuilder {
                 .executes(ctx -> {
                     try {
                         BackItemTransformStorage.saveBackItemTransforms(BackItemRenderConfig.getBackItemTransforms()); // ты реализировал этот метод ранее
-                        ctx.getSource().sendFeedback(Text.of("Backslot config saved.")); // отправить фидбек игроку
+                        ctx.getSource().sendFeedback(Text.translatable("chat.backslot-flike.config_saved").setStyle(BackSlotCommandsStyles.applied)); // отправить фидбек игроку
                     } catch (Exception ex) {
                         // логирование и информирование пользователя
                         //noinspection CallToPrintStackTrace
                         ex.printStackTrace();
-                        ctx.getSource().sendError(Text.of("Failed to save backslot config: " + ex.getMessage()));
+                        ctx.getSource().sendError(Text.translatable( "chat.backslot-flike.saving_error", ex.getMessage()).setStyle(BackSlotCommandsStyles.warning));
                     }
                     return 1;
                 });

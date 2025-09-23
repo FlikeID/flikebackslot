@@ -13,8 +13,8 @@ import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.render.model.json.Transformation;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -25,47 +25,42 @@ import java.util.stream.Collectors;
 public class BackSlotCommandsHandler {
 
     public static void sendModInfo(FabricClientCommandSource src) {
-        src.sendFeedback(Text.of(Formatting.BLUE + "BackSlot"));
+        src.sendFeedback(Text.translatable("category.backslot"));
 
 
-        Text prefixVer = Text.literal("  Версия: ");
-        Text commandVer = Text.literal(Backslot.getModVersion())
-                .styled(s -> s.withColor(Formatting.GRAY));
+        MutableText commandVer = Text.literal(Backslot.getModVersion())
+                .setStyle(BackSlotCommandsStyles.description);
+        MutableText prefixVer = Text.translatable("chat.backslot-flike.version", commandVer);
 
-        Text prefixAuthor = Text.literal("  Автор: ");
-        Text commandAuthor = Text.literal(Backslot.getModAuthors())
-                .styled(s -> s.withColor(Formatting.GRAY));
+        MutableText commandAuthor = Text.literal(Backslot.getModAuthors())
+                .setStyle(BackSlotCommandsStyles.description);
+        MutableText prefixAuthor = Text.translatable("chat.backslot-flike.author", commandAuthor);
 
-        Text prefixDesc = Text.literal("  Описание: ");
-        Text commandDesc = Text.literal(Backslot.getModDescription())
-                .styled(s -> s.withColor(Formatting.GRAY));
+        MutableText commandDesc = Text.literal(Backslot.getModDescription())
+                .setStyle(BackSlotCommandsStyles.description);
+        MutableText prefixDesc = Text.translatable("chat.backslot-flike.description", commandDesc);
 
         String gitUrl = Backslot.getModContact("sources");
-        Text prefixRepo = Text.literal("  Репозиторий: ");
-        Text commandRepo = Text.literal(gitUrl)
-                .styled(s -> s.withColor(Formatting.AQUA)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, gitUrl))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Открыть в браузере"))));
+        MutableText commandRepo = Text.literal(gitUrl)
+                .setStyle(BackSlotCommandsStyles.web_clickable(gitUrl,"chat.backslot-flike.browser_open"));
+        MutableText prefixRepo = Text.translatable("chat.backslot-flike.source", commandRepo);
 
-        src.sendFeedback(Text.empty().append(prefixVer).append(commandVer));
-        src.sendFeedback(Text.empty().append(prefixAuthor).append(commandAuthor));
-        src.sendFeedback(Text.empty().append(prefixDesc).append(commandDesc));
-        src.sendFeedback(Text.empty().append(prefixRepo).append(commandRepo));
+        src.sendFeedback(prefixVer);
+        src.sendFeedback(prefixAuthor);
+        src.sendFeedback(prefixDesc);
+        src.sendFeedback(prefixRepo);
 
-        Text prefix = Text.literal("Используй ");
-        Text command = Text.literal("/backslot help")
-                .styled(s -> s.withColor(  Formatting.AQUA)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/backslot help"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Открыть список команд"))));
-        Text suffix = Text.literal(" для списка команд");
+        MutableText helpCommand= Text.literal("/backslot help")
+                .setStyle(BackSlotCommandsStyles.send_command("/backslot help", "chat.backslot-flike.show_commands"));
+        MutableText useHelp = Text.translatable("chat.backslot-flike.use_help",helpCommand);
 
-        src.sendFeedback(Text.empty().append(prefix).append(command).append(suffix));
+        src.sendFeedback(useHelp);
     }
 
     public static void sendBackslotHelp(FabricClientCommandSource src) {
 
         // Собираем hover‑подсказку для <mode>
-        List<String> modeKeys = (List<String>) BackItemRenderConfig.ModeKey.getList(); // ["fixed","thirdperson","firstperson", ...]
+        List<String> modeKeys = (List<String>) BackItemRenderConfig.ModeKey.getList();
         String hoverContent = modeKeys.stream()
                 .map(k -> {
                     String desc = BackItemRenderConfig.ModeKey.getDescription(k);
@@ -74,18 +69,16 @@ public class BackSlotCommandsHandler {
                 })
                 .collect(Collectors.joining("\n"));
 
-        // Текст подсказки как Text (многострочный)
-        Text hoverText = Text.literal(hoverContent).styled(s -> s.withColor(Formatting.GRAY));
+        // Текст подсказки как MutableText (многострочный)
+        MutableText hoverText = Text.literal(hoverContent)
+                .setStyle(BackSlotCommandsStyles.description);
 
         // Основная строка с hover на части "<mode>"
-        Text prefix = Text.literal(  Formatting.AQUA +"  /backslot transform render ").styled(
-                s->s
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot transform render"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду"))));
-        Text modePlaceholder = Text.literal("<mode>")
-                .styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))
-                        .withColor(Formatting.GREEN)); // цвет для выделения
-        Text suffix = Text.literal(" — Установить метод рендера");
+        MutableText prefix = Text.literal("  /backslot transform render ")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot transform render"));
+        MutableText modePlaceholder = Text.literal("<mode>")
+                .setStyle(BackSlotCommandsStyles.hover_hint(hoverText)); // цвет для выделения
+        MutableText suffix = Text.translatable("chat.backslot-flike.set_render").setStyle(Style.EMPTY);
 
         // Собираем hover‑подсказку для <type> (TypeKey)
         List<String> typeKeys = (List<String>) BackItemRenderConfig.TypeKey.getList(); // e.g. ["position","rotation","scale","render",...]
@@ -97,7 +90,8 @@ public class BackSlotCommandsHandler {
                 })
                 .collect(Collectors.joining("\n"));
 
-        Text typeHoverText = Text.literal(typeHoverContent).styled(s -> s.withColor(Formatting.GRAY));
+        MutableText typeHoverText = Text.literal(typeHoverContent)
+                .setStyle(BackSlotCommandsStyles.description);
 
         // Собираем hover‑подсказку для <axis> (AxisKey)
         List<String> axisKeys = (List<String>) BackItemRenderConfig.AxisKey.getList();
@@ -109,46 +103,39 @@ public class BackSlotCommandsHandler {
                 })
                 .collect(Collectors.joining("\n"));
 
-        Text axisHoverText = Text.literal(axisHoverContent).styled(s -> s.withColor(Formatting.GRAY));
+        MutableText axisHoverText = Text.translatable(axisHoverContent)
+                .setStyle(BackSlotCommandsStyles.description);
         // Value hover text
-        Text valueHoverText = Text.literal("Значений с плавающей точкой (float, десятичная дробь)").styled(s -> s.withColor(Formatting.GRAY));
+        MutableText valueHoverText = Text.translatable("chat.backslot-flike.desc_float")
+                .setStyle(BackSlotCommandsStyles.description);
         // Value hover text
-        Text valueHoverTextWithRotation = Text.empty()
+        MutableText valueHoverTextWithRotation = Text.empty()
                 .append(valueHoverText)
-                .append(Text.literal("\nВращения указываются в градусах\nМетод рендера использует фиксированные значения (см. ниже)")
-                        .styled(s -> s.withColor(Formatting.GRAY)));
+                .append(
+                        Text.translatable("chat.backslot-flike.rotation_n_render")
+                                .setStyle(BackSlotCommandsStyles.description)
+                );
 
         // Основная строка с hover на части "<type>"
-        Text prefixPos = Text.literal(  Formatting.AQUA +"  /backslot transform ").styled(
-                s->s
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot transform"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду"))));
-        Text typePlaceholder = Text.literal("<type>")
-                .styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, typeHoverText))
-                        .withColor(  Formatting.GREEN));
-        Text space = Text.literal(" ");
-        Text axisPlaceholder = Text.literal("<axis>")
-                .styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, axisHoverText))
-                        .withColor(  Formatting.GREEN));
-        Text valuePlaceholder = Text.literal("<value>")
-                .styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, valueHoverTextWithRotation))
-                        .withColor(  Formatting.GREEN));
-        Text suffixPos = Text.literal(" — Установить position по оси");
+        MutableText prefixPos = Text.literal(  "  /backslot transform ")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot transform"));
+        MutableText typePlaceholder = Text.literal("<type>")
+                .setStyle(BackSlotCommandsStyles.hover_hint(typeHoverText));
+        MutableText axisPlaceholder = Text.literal("<axis>")
+                .setStyle(BackSlotCommandsStyles.hover_hint(axisHoverText));
+        MutableText valuePlaceholder = Text.literal("<value>")
+                .setStyle(BackSlotCommandsStyles.hover_hint(valueHoverTextWithRotation));
+        MutableText suffixPos = Text.translatable("chat.backslot-flike.set_position").setStyle(Style.EMPTY);
 
 
         // Основная строка с hover на части "<value>"
-        Text prefixScales = Text.literal(  Formatting.AQUA +"  /backslot transform scales ").styled(
-                s->s
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot transform scales"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду"))));
-        Text valueScalesPlaceholder = Text.literal("<value>")
-                .styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, valueHoverText))
-                        .withColor(  Formatting.GREEN));
-        Text suffixScales = Text.literal(" — Установить одинаковый масштаб по всем осям (X/Y/Z)");
+        MutableText prefixScales = Text.literal("  /backslot transform scales ")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot transform scales"));
+        MutableText suffixScales = Text.translatable("chat.backslot-flike.set_scales").setStyle(Style.EMPTY);
 
         // Основная строка с hover на части "<jsonString>"
-        Text jsonHoverText = Text.literal("""
-                Json строка формата:\s
+        MutableText jsonHoverText = Text.translatable("chat.backslot-flike.json_format", """
+                \s
                 {
                   "rotation":{
                     "x":90.0,
@@ -167,89 +154,74 @@ public class BackSlotCommandsHandler {
                   },
                   "mode":"ground",
                   "enabled":true
-                }""").styled(s -> s.withColor(Formatting.GRAY));
-        Text prefixJson = Text.literal(  Formatting.AQUA +"  /backslot transform json ").styled(
-                s->s
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot transform json"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду"))));
-        Text valueJsonPlaceholder = Text.literal("<jsonString>")
-                .styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, jsonHoverText))
-                        .withColor(  Formatting.GREEN));
-        Text suffixJson = Text.literal(" — Загрузить трансформацию из json");
+                }
+                """).setStyle(BackSlotCommandsStyles.description);
+        MutableText prefixJson = Text.literal("  /backslot transform json ")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot transform json"));
+        MutableText valueJsonPlaceholder = Text.literal("<jsonString>")
+                .setStyle(BackSlotCommandsStyles.hover_hint(jsonHoverText));
+        MutableText suffixJson = Text.translatable("chat.backslot-flike.json_load").setStyle(Style.EMPTY);
 
 
-        Text prefixSave = Text.literal("  ");
-        Text commandSave = Text.literal("/backslot save")
-                .styled(s -> s
-                        .withColor(Formatting.AQUA)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot save"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду"))));
-        Text suffixSave = Text.literal(" — Сохранить текущие трансформы в config/flike/backslot.json");
-
-        Text prefixReload = Text.literal("  ");
-        Text commandReload = Text.literal("/backslot reload")
-                .styled(s -> s
-                        .withColor(Formatting.AQUA)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot reload"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду"))));
-        Text suffixReload = Text.literal(" — Загрузить конфигурации из config/flike/backslot.json");
-
-        Text prefixHelp = Text.literal("  ");
-        Text commandHelp = Text.literal("/backslot help")
-                .styled(s -> s
-                        .withColor(Formatting.AQUA)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot help"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду"))));
-        Text suffixHelp = Text.literal(" — Показать эту справку");
-
-        Text prefixTransform = Text.literal("  ");
-        Text commandTransform = Text.literal("/backslot transform")
-                .styled(s -> s
-                        .withColor(Formatting.AQUA)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot transform"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду"))));
-        Text suffixTransform = Text.literal(" — Показать текущие настройки для выбранного типа/стека");
+        MutableText commandSave = Text.literal("  /backslot save ")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot save"));
+        MutableText suffixSave = Text.translatable( "chat.backslot-flike.save").setStyle(Style.EMPTY);
 
 
-        src.sendFeedback(Text.of(Formatting.WHITE +"Backslot commands:"));
-        src.sendFeedback(Text.empty().append(prefixSave).append(commandSave).append(suffixSave));
-        src.sendFeedback(Text.empty().append(prefixReload).append(commandReload).append(suffixReload));
-        src.sendFeedback(Text.empty().append(prefixHelp).append(commandHelp).append(suffixHelp));
-        src.sendFeedback(Text.empty().append(prefixTransform).append(commandTransform).append(suffixTransform));
-        src.sendFeedback(Text.empty()
+        MutableText commandReload = Text.literal("  /backslot reload")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot reload"));
+        MutableText suffixReload = Text.translatable("chat.backslot-flike.load").setStyle(Style.EMPTY);
+
+        MutableText commandHelp = Text.literal("  /backslot help")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot help"));
+        MutableText suffixHelp = Text.translatable("chat.backslot-flike.help").setStyle(Style.EMPTY);
+
+
+        MutableText commandTransform = Text.literal("  /backslot transform")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot transform"));
+        MutableText suffixTransform = Text.translatable("chat.backslot-flike.transform").setStyle(Style.EMPTY);
+
+        MutableText exampleTransform = Text.literal("  /backslot transform render fixed")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot transform render fixed"));
+        MutableText exampleTransform2 = Text.literal("  /backslot transform position x 0.25")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot transform position x 0.25"));
+        MutableText exampleTransform3 = Text.literal("  /backslot transform scales 1.5")
+                .setStyle(BackSlotCommandsStyles.paste_command("/backslot transform scales 1.5"));
+
+
+        src.sendFeedback(Text.translatable("chat.backslot-flike.commands"));
+        src.sendFeedback(Text.literal("").append(commandSave).append(suffixSave));
+        src.sendFeedback(Text.literal("").append(commandReload).append(suffixReload));
+        src.sendFeedback(Text.literal("").append(commandHelp).append(suffixHelp));
+        src.sendFeedback(Text.literal("").append(commandTransform).append(suffixTransform));
+        src.sendFeedback(Text.literal("")
                 .append(prefixPos)
                 .append(typePlaceholder)
-                .append(space)
+                .append(Text.literal(" ") )
                 .append(axisPlaceholder)
-                .append(space)
+                .append(Text.literal(" ") )
                 .append(valuePlaceholder)
                 .append(suffixPos)
         );
-        src.sendFeedback(Text.empty().append(prefix).append(modePlaceholder).append(suffix));
-        src.sendFeedback(Text.empty().append(prefixScales).append(valueScalesPlaceholder).append(suffixScales));
-        src.sendFeedback(Text.empty().append(prefixJson).append(valueJsonPlaceholder).append(suffixJson));
-        src.sendFeedback(Text.literal(Formatting.WHITE +"Примеры:"));
-        src.sendFeedback(Text.literal(Formatting.AQUA +"  /backslot transform render fixed").styled(s -> s
-                .withColor(Formatting.AQUA)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot transform render fixed"))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду")))));
-        src.sendFeedback(Text.literal(Formatting.AQUA +"  /backslot transform position x 0.25").styled(s -> s
-                .withColor(Formatting.AQUA)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot transform position x 0.25"))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду")))));
-        src.sendFeedback(Text.literal(Formatting.AQUA +"  /backslot transform scales 1.5").styled(s -> s
-                .withColor(Formatting.AQUA)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/backslot transform scales 1.5"))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Вставить команду")))));
+        src.sendFeedback(Text.literal("").append(prefix).append(modePlaceholder).append(suffix));
+        src.sendFeedback(Text.literal("").append(prefixScales).append(valuePlaceholder).append(suffixScales));
+        src.sendFeedback(Text.literal("").append(prefixJson).append(valueJsonPlaceholder).append(suffixJson));
+        src.sendFeedback(Text.translatable("chat.backslot-flike.examples"));
+        src.sendFeedback(exampleTransform);
+        src.sendFeedback(exampleTransform2);
+        src.sendFeedback(exampleTransform3);
     }
 
-    public static int showBackItemTransform() {
+    public static int showBackItemTransform(FabricClientCommandSource src) {
         AbstractClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return 0;
 
         ItemStack backStack = BackSlotLogic.getBackItemStack(player);
         if (backStack == null || backStack.isEmpty()) {
-            player.sendMessage(Text.literal("Backslot: no item in back").formatted(Formatting.YELLOW), false);
+            src.sendFeedback(
+                    Text.translatable("chat.backslot-flike.backslot_empty")
+                            .setStyle(BackSlotCommandsStyles.warning)
+            );
             return 0;
         }
 
@@ -259,18 +231,26 @@ public class BackSlotCommandsHandler {
         ModelTransformationMode mode = transform.transform_mode;
         boolean enabled = transform.enabled;
 
-        String rot   = String.format("rotation:     x=%.1f y=%.1f z=%.1f", t.rotation.x, t.rotation.y, t.rotation.z);
-        String transl = String.format("translation: x=%.3f y=%.3f z=%.3f", t.translation.x, t.translation.y, t.translation.z);
-        String scale = String.format("scale:        x=%.3f y=%.3f z=%.3f", t.scale.x, t.scale.y, t.scale.z);
-        String modeStr = "mode: " + (mode != null ? mode.name() : "null");
-        String enabledeStr = "enabled: " + enabled;
+        MutableText transformFor = Text.translatable("chat.backslot-flike.transform_for", backStack.getItem())
+                .setStyle(BackSlotCommandsStyles.applied);
+        MutableText rot         = Text.literal("rotation:     x="+t.rotation.x+"\ty="+t.rotation.y+"\tz="+t.rotation.z);
+        MutableText transl      = Text.literal("translation:  x="+t.translation.x+"\ty="+t.translation.y+"\tz="+t.translation.z);
+        MutableText scale       = Text.literal("rotation:     x="+t.scale.x+"\ty="+t.scale.y+"\tz="+t.scale.z);
+        MutableText modeStr     = Text.literal("mode: " + (mode != null ? mode.name() : "null"))
+                .formatted(Formatting.WHITE);
+        MutableText enabledStr  = Text.literal("enabled: " + enabled)
+                .formatted(Formatting.DARK_PURPLE);
 
-        player.sendMessage(Text.literal("Backslot transform for " + backStack.getItem()).formatted(  Formatting.GREEN), false);
-        player.sendMessage(Text.literal(rot).formatted(Formatting.WHITE), false);
-        player.sendMessage(Text.literal(transl).formatted(Formatting.WHITE), false);
-        player.sendMessage(Text.literal(scale).formatted(Formatting.WHITE), false);
-        player.sendMessage(Text.literal(modeStr).formatted(Formatting.LIGHT_PURPLE), false);
-        player.sendMessage(Text.literal(enabledeStr).formatted(Formatting.DARK_PURPLE), false);
+        src.sendFeedback(transformFor);
+        src.sendFeedback(rot);
+        src.sendFeedback(transl);
+        src.sendFeedback(scale);
+        src.sendFeedback(modeStr);
+        src.sendFeedback(enabledStr);
+        src.sendFeedback(transl);
+        src.sendFeedback(scale);
+        src.sendFeedback(modeStr);
+        src.sendFeedback(enabledStr);
 
         JsonObject root = new JsonObject();
         Identifier id = Registries.ITEM.getId(backStack.getItem());
@@ -288,23 +268,20 @@ public class BackSlotCommandsHandler {
         translation.add("z", new JsonPrimitive(t.translation.z));
         root.add("translation", translation);
 
-        JsonObject jscale = new JsonObject();
-        jscale.add("x", new JsonPrimitive(t.scale.x));
-        jscale.add("y", new JsonPrimitive(t.scale.y));
-        jscale.add("z", new JsonPrimitive(t.scale.z));
-        root.add("scale", jscale);
+        JsonObject jsonScale = new JsonObject();
+        jsonScale.add("x", new JsonPrimitive(t.scale.x));
+        jsonScale.add("y", new JsonPrimitive(t.scale.y));
+        jsonScale.add("z", new JsonPrimitive(t.scale.z));
+        root.add("scale", jsonScale);
 
         root.add("mode", new JsonPrimitive(mode != null ? mode.name().toLowerCase() : "null"));
         root.add("enabled", new JsonPrimitive(enabled));
 
-        String json = root.toString();
+        String jsonString = root.toString();
 
-        Text button = Text.literal(" [Копировать]").styled(s ->s
-                .withColor(Formatting.GOLD)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, json))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать JSON в буфер обмена").formatted(Formatting.GOLD)))
-        );
-        player.sendMessage(button, false);
+        MutableText button = Text.translatable("chat.backslot-flike.copy")
+                .setStyle(BackSlotCommandsStyles.json_clipboard(jsonString));
+        src.sendFeedback(button);
 
         return 1;
     }

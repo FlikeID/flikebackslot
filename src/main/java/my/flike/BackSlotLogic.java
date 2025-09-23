@@ -80,7 +80,7 @@ public class BackSlotLogic {
                 int freeSlot = player.getInventory().getEmptySlot();
                 if (freeSlot == -1) {
                     // нет места — можно уведомить игрока (чат/звук) или просто выйти
-                    player.sendMessage(Text.literal("No free inventory slot."), true);
+                    player.sendMessage(Text.translatable("msg.backslot-flike.hand_occupied"), true);
                     return;
                 }
 

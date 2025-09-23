@@ -1,24 +1,17 @@
 package my.flike.client.config;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import my.flike.BackSlotLogic;
-import my.flike.client.BackSlotClientLogic;
 import my.flike.client.render.BackItemTransform;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.render.model.json.Transformation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 import java.util.*;
@@ -27,18 +20,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BackItemRenderConfig {
 
     public enum TypeKey {
-        rotation("вращение"), rot("вращение"), r("вращение"),
-        position("позиция"), pos("позиция"), p("позиция"),
-        scale("масштаб"), scl("масштаб"), s("масштаб"),
-        render("метод рендера"), ren("метод рендера"), m("метод рендера"),
-        scales("равномерный масштаб (см. ниже)"), json("загрузка параметров из json-строки"),
-        translation("синоним position");
+        rotation("chat.backslot-flike.rotation"), rot("chat.backslot-flike.rotation"), r("chat.backslot-flike.rotation"),
+        position("chat.backslot-flike.position"), pos("chat.backslot-flike.position"), p("chat.backslot-flike.position"),
+        scale("chat.backslot-flike.scale"), scl("chat.backslot-flike.scale"), s("chat.backslot-flike.scale"),
+        render("chat.backslot-flike.render"), ren("chat.backslot-flike.render"), m("chat.backslot-flike.render"),
+        scales("chat.backslot-flike.scales"), json("chat.backslot-flike.json"),
+        translation("chat.backslot-flike.translation");
         private final String description;
         TypeKey(String description) { this.description = description; }
         public String getDescription() { return description; }
 
         public static String getDescription(String key) {
-            try { return valueOf(key).getDescription(); } catch (IllegalArgumentException e) { return null; }
+            try { return Text.translatable(valueOf(key).getDescription()).getString(); } catch (IllegalArgumentException e) { return null; }
         }
 
         /**
@@ -64,8 +57,8 @@ public class BackItemRenderConfig {
                 }
             }
             throw new CommandSyntaxException(
-                    new SimpleCommandExceptionType(Text.literal("Wrong backslot_transform type argument: " + value)),
-                    Text.literal("Wrong type: " + value + ". Available: " + String.join(", ", getList()))
+                    new SimpleCommandExceptionType(Text.translatable("chat.backslot-flike.wrong_argument", value)),
+                    Text.translatable("chat.backslot-flike.available_arguments", value, String.join(", ", getList()))
             );
         }
 
@@ -83,16 +76,16 @@ public class BackItemRenderConfig {
     }
 
     public enum AxisKey {
-        x("Ось X"),
-        y("Ось Y"),
-        z("Ось Z");
+        x("chat.backslot-flike.x_axis"),
+        y("chat.backslot-flike.y_axis"),
+        z("chat.backslot-flike.z_axis");
 
         private final String description;
         AxisKey(String description) { this.description = description; }
         public String getDescription() { return description; }
 
         public static String getDescription(String key) {
-            try { return valueOf(key).getDescription(); } catch (IllegalArgumentException e) { return null; }
+            try { return Text.translatable(valueOf(key).getDescription()).getString(); } catch (IllegalArgumentException e) { return null; }
         }
 
         /**
@@ -103,8 +96,8 @@ public class BackItemRenderConfig {
                 if (key.name().equalsIgnoreCase(value)) return key;
             }
             throw new CommandSyntaxException(
-                    new SimpleCommandExceptionType(Text.literal("Недопустимая ось: " + value)),
-                    Text.literal("Недопустимая ось: " + value + ". Допустимые: " + String.join(", ", getList()))
+                    new SimpleCommandExceptionType(Text.translatable("chat.backslot-flike.wrong_axis", value)),
+                    Text.translatable("chat.backslot-flike.available_axis", value, String.join(", ", getList()))
             );
         }
 
@@ -117,25 +110,25 @@ public class BackItemRenderConfig {
     }
 
     public enum ModeKey {
-        FALSE("Выключить рендер"),
-        NONE("Рендер по умолчанию"),
-        LEFT_HAND("Рендер левой руки от третьего лица"),
-        RIGHT_HAND("Рендер правой руки от третьего лица"),
-        HAND("Рендер правой руки от третьего лица"),
-        LEFT_HOLD("Рендер левой руки от первого лица"),
-        RIGHT_HOLD("Рендер правой руки от первого лица"),
-        HOLD("Рендер правой руки от первого лица"),
-        HEAD("Рендер головы"),
-        GUI("Рендер интерфейса"),
-        GROUND("Рендер выброшенного предмета"),
-        FIXED("Рендер рамки для предметов");
+        FALSE("chat.backslot-flike.false"),
+        NONE("chat.backslot-flike.none"),
+        LEFT_HAND("chat.backslot-flike.left_hand"),
+        RIGHT_HAND("chat.backslot-flike.right_hand"),
+        HAND("chat.backslot-flike.right_hand"),
+        LEFT_HOLD("chat.backslot-flike.left_hold"),
+        RIGHT_HOLD("chat.backslot-flike.right_hold"),
+        HOLD("chat.backslot-flike.right_hold"),
+        HEAD("chat.backslot-flike.head"),
+        GUI("chat.backslot-flike.gui"),
+        GROUND("chat.backslot-flike.ground"),
+        FIXED("chat.backslot-flike.fixed");
 
         private final String description;
         ModeKey(String description) { this.description = description; }
         public String getDescription() { return description; }
 
         public static String getDescription(String key) {
-            try { return valueOf(key).getDescription(); } catch (IllegalArgumentException e) { return null; }
+            try { return Text.translatable(valueOf(key).getDescription()).getString(); } catch (IllegalArgumentException e) { return null; }
         }
 
         /**
@@ -172,8 +165,8 @@ public class BackItemRenderConfig {
                 if (key.name().equalsIgnoreCase(value)) return key;
             }
             throw new CommandSyntaxException(
-                    new SimpleCommandExceptionType(Text.literal("Недопустимый тип рендера: " + value)),
-                    Text.literal("Недопустимый тип рендера: " + value + ". Допустимые: " + String.join(", ", getList()))
+                    new SimpleCommandExceptionType(Text.translatable("chat.backslot-flike.wrong_render", value)),
+                    Text.translatable("chat.backslot-flike.available_render", value, String.join(", ", getList()))
             );
         }
 

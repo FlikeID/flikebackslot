@@ -11,7 +11,7 @@ public class ShieldBackItemTransform extends BackItemTransform {
     private static Transformation makeDefaultTransform() {
         return new Transformation(
                 new Vector3f(180f, 0f, 30f),
-                new Vector3f(0f, 0.3f, 0.12f),
+                new Vector3f(0f, 0.3f, 0.15f),
                 new Vector3f(1.7f, 1.7f, 1.7f)
         );
     }

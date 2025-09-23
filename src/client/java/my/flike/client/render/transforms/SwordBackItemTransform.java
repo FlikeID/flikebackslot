@@ -11,7 +11,7 @@ public class SwordBackItemTransform extends BackItemTransform {
     private static Transformation makeDefaultTransform() {
         return new Transformation(
                 new Vector3f(0f, 0f, 270f),
-                new Vector3f(0f, 0.35f, 0.17f),
+                new Vector3f(0f, 0.35f, 0.2f),
                 new Vector3f(1f, 1f, 1f)
         );
     }

@@ -1,14 +1,12 @@
 package my.flike.client;
 
-import dev.emi.trinkets.api.TrinketComponent;
-import dev.emi.trinkets.api.TrinketInventory;
-import dev.emi.trinkets.api.TrinketsApi;
 import io.netty.buffer.Unpooled;
 import my.flike.Backslot;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 
@@ -29,7 +27,7 @@ public class BackSlotClientLogic {
         client.execute(() -> {
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
             ClientPlayNetworking.send(SWAP_PACKET, buf);
-            Backslot.LOG("Sent swap packet to server");
+            Backslot.LOG(Text.translatable("log.backslot-flike.client_send_swap"));
         });
     }
 

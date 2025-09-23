@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +19,10 @@ public class Backslot implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("Backslot mod initializing");
+        LOG(Text.translatable("log.backslot-flike.server_init_start"));
         BackslotCompat.registerTrinketPredicate();
         BackSlotLogic.register();
+        LOG(Text.translatable("log.backslot-flike.server_init_end"));
     }
 
     public static String getModVersion() {
@@ -88,6 +90,10 @@ public class Backslot implements ModInitializer {
                 .orElse("No sources");
     }
 
+    @SuppressWarnings("unused")
+    public static void LOG(MutableText text, PlayerEntity player){
+        LOG(text.getString(),player);
+    }
 
     @SuppressWarnings("unused")
     public static void LOG(String text, PlayerEntity player){
@@ -95,7 +101,11 @@ public class Backslot implements ModInitializer {
         player.sendMessage(Text.of(String.valueOf(text)), false);
     }
 
-    public static void LOG(String text){
+    public static void LOG(MutableText text){
+        LOG(text.getString());
+    }
+
+    public static void LOG(String text) {
         LOGGER.info(text);
     }
 }
